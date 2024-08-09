@@ -1,0 +1,76 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'au.felix.dev'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+project.ext.lwjglVersion = "3.3.3"
+
+
+
+def os = System.getProperty('os.name').toLowerCase()
+
+if (os.contains('win')) {
+    project.ext.lwjglNatives = "natives-windows"
+} else if (os.contains('nix') || os.contains('nux')) {
+    project.ext.lwjglNatives = "natives-linux"
+} else {
+    project.ext.lwjglNatives = "natives-macos"
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs = ['-Xms512m', '-Xmx2048m']
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation 'org.jetbrains:annotations:20.1.0'
+
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
+
+    implementation "org.lwjgl:lwjgl:$lwjglVersion"
+    implementation "org.lwjgl:lwjgl-glfw:$lwjglVersion"
+    implementation "org.lwjgl:lwjgl-opengl:$lwjglVersion"
+    implementation "org.lwjgl:lwjgl-stb:$lwjglVersion"
+    implementation "org.lwjgl:lwjgl-openal:$lwjglVersion"
+    runtimeOnly "org.lwjgl:lwjgl:$lwjglVersion:natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-opengl:$lwjglVersion:natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-stb:$lwjglVersion:natives-linux"
+    runtimeOnly "org.lwjgl:lwjgl-openal:$lwjglVersion:natives-linux"
+
+
+    implementation 'org.joml:joml:1.10.5'
+    implementation 'de.articdive:jnoise-pipeline:4.1.0'
+    implementation group: 'org.tinylog', name: 'tinylog-api', version: '2.3.2'
+    implementation group: 'org.tinylog', name: 'tinylog-impl', version: '2.3.2'
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.12'
+    testImplementation 'junit:junit:4.13.1'
+}
+
+application {
+    mainClass = 'au.felix.dev.Main' // Replace with your actual main class
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'au.felix.dev.Main' // Replace with your actual main class
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
